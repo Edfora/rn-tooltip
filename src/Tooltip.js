@@ -6,6 +6,7 @@ import {
   Modal,
   View,
   ViewPropTypes as RNViewPropTypes,
+  Image
 } from 'react-native';
 import PropTypes from 'prop-types';
 
@@ -30,7 +31,7 @@ type Props = {
   width: number | string,
   containerStyle: any,
   pointerColor: string,
-  pointerStyle: {},
+  pointerStyle: any,
   onClose: () => void,
   onOpen: () => void,
   withOverlay: boolean,
@@ -51,7 +52,6 @@ class Tooltip extends React.Component<Props, State> {
   };
 
   renderedElement;
-  timeout;
 
   toggleTooltip = () => {
     const { onClose } = this.props;
@@ -134,7 +134,7 @@ class Tooltip extends React.Component<Props, State> {
 
   renderPointer = tooltipY => {
     const { yOffset, xOffset, elementHeight, elementWidth } = this.state;
-    const { backgroundColor, pointerColor, pointerStyle } = this.props;
+    const { backgroundColor, pointerColor, pointerStyle, useTriangle } = this.props;
     const pastMiddleLine = yOffset > tooltipY;
 
     return (
@@ -145,13 +145,15 @@ class Tooltip extends React.Component<Props, State> {
           left: xOffset + elementWidth / 2 - 7.5,
         }}
       >
-        <Triangle
-          style={{
-            borderBottomColor: pointerColor || backgroundColor,
-            ...pointerStyle,
-          }}
-          isDown={pastMiddleLine}
-        />
+        {useTriangle
+          ? <Triangle
+              style={{
+                borderBottomColor: pointerColor || backgroundColor,
+                ...pointerStyle,
+              }}
+              isDown={pastMiddleLine}
+            />
+           : <Image source={require('../src/triangle.png')} style={[pointerStyle, { width: 24, height: 24, elevation: 4 }]} />}
       </View>
     );
   };
@@ -186,11 +188,7 @@ class Tooltip extends React.Component<Props, State> {
 
   componentDidMount() {
     // wait to compute onLayout values.
-    this.timeout = setTimeout(this.getElementPosition, 500);
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.timeout);
+    setTimeout(this.getElementPosition, 500);
   }
 
   getElementPosition = () => {
@@ -252,6 +250,7 @@ Tooltip.propTypes = {
   backgroundColor: PropTypes.string,
   highlightColor: PropTypes.string,
   actionType: PropTypes.oneOf(['press', 'longPress', 'none']),
+  useTriangle: PropTypes.bool
 };
 
 Tooltip.defaultProps = {
@@ -267,6 +266,7 @@ Tooltip.defaultProps = {
   backgroundColor: '#617080',
   onClose: () => {},
   onOpen: () => {},
+  useTriangle: false
 };
 
 const styles = {
